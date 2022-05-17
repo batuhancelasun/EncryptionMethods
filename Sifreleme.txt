@@ -1,0 +1,121 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Security.Cryptography;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace Sifreleme
+{
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            basagit:
+            Console.WriteLine("Bir şifreleme yöntemi seçiniz");
+            Console.WriteLine("1) Kaydırma yöntemi.");
+            Console.WriteLine("2) Bit yöntemi.");
+            int secim = Convert.ToInt32(Console.ReadLine());
+
+            switch (secim)
+            {
+                case 1:
+
+                    kaydirma kay = new kaydirma();
+                    Console.WriteLine("Kaydırma yöntemi ile şifrelemek istediğiniz karakter giriniz: ");
+                    string encrypt = kay.encode(Console.ReadLine());
+                    Console.WriteLine("Kaydırma yöntemi ile şifrelenmiş metin: " + "\n" + encrypt);
+                    string decrypt = kay.decode(encrypt);
+                    Console.WriteLine("Şifrelenmemiş metin: " + "\n" + decrypt);
+                    Console.WriteLine("------------------------------------------");
+                    Console.WriteLine("Başka işlem yapmak ister misiniz? E/H");
+                    string bisleme = Console.ReadLine();
+                    if (bisleme == "e" || bisleme == "E")
+                    {
+                        goto basagit;
+                    }
+                    else
+                    {
+                        break;
+                    }
+
+                case 2:
+                    bitmet bit = new bitmet();
+                    Console.WriteLine("Kaydırma yöntemi ile şifrelemek istediğiniz karakter giriniz: ");
+                    string encryptbit = bit.encode(Console.ReadLine());
+                    Console.WriteLine("Kaydırma yöntemi ile şifrelenmiş metin: "+ "\n" + encryptbit);
+                    string decryptbit = bit.decode(encryptbit);
+                    Console.WriteLine("Şifrelenmemiş metin: " + "\n" + decryptbit);
+                    Console.WriteLine("------------------------------------------");
+                    Console.WriteLine("Başka işlem yapmak ister misiniz? E/H");
+                    string bisleme2 = Console.ReadLine();
+                    if (bisleme2 == "e" || bisleme2 == "E")
+                    {
+                        goto basagit;
+                    }
+                    else
+                    {
+                        break;
+                    }
+            }
+        }
+    }
+
+    public interface ICipher
+    {
+        string encode(string kar);
+        string decode(string kar);
+    }
+
+    class kaydirma : ICipher
+    {
+        public string encode(string kar)
+        {
+            string sifrelenmis = "";
+
+            for (int i = 0; i < kar.Length; i++)
+                sifrelenmis = sifrelenmis + (char)(kar[i] + 1);
+
+            return sifrelenmis;
+        }
+
+
+        public string decode(string str)
+        {
+            string sifrelenmemis = "";
+
+            for (int i = 0; i < str.Length; i++)
+                sifrelenmemis = sifrelenmemis + (char)(str[i] - 1);
+
+            return sifrelenmemis;
+        }
+    }
+
+    class bitmet : ICipher
+    {
+        public string encode(string kar)
+        {
+            CspParameters CSApars = new CspParameters();
+            CSApars.KeyContainerName = "Test001";
+
+            RSACryptoServiceProvider rsa = new RSACryptoServiceProvider(CSApars);
+
+            byte[] byteText = Encoding.UTF8.GetBytes(kar);
+            byte[] byteEntry = rsa.Encrypt(byteText, false);
+
+            return Convert.ToBase64String(byteEntry);
+        }
+        public string decode(string kar)
+        {
+            CspParameters CSApars = new CspParameters();
+            CSApars.KeyContainerName = "Test001";
+
+            RSACryptoServiceProvider rsa = new RSACryptoServiceProvider(CSApars);
+
+            byte[] byteEntry = Convert.FromBase64String(kar);
+            byte[] byteText = rsa.Decrypt(byteEntry, false);
+
+            return Encoding.UTF8.GetString(byteText);
+        }
+    }
+}
